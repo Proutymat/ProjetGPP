@@ -1,5 +1,6 @@
 ﻿#include "Camera.hpp"
 #include "Game.hpp"
+#include <iostream>
 
 /* CONSTRUCTORS */
 
@@ -45,4 +46,17 @@ void Camera::checkShake() {
     else if (shakeTime < 0) {
         makeCameraShake();
     }
+}
+
+void Camera::update()
+{
+     sf::View view = game->win->getView();
+ 
+     // Lerp the camera to the player's position
+     view.setCenter(game->player->xx + shakeX, game->player->yy + shakeY);
+ 
+     // Apply the view to the window
+     game->win->setView(view);
+
+    std::cout << game->player->xx << std::endl;
 }

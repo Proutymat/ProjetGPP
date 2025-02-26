@@ -10,7 +10,7 @@
 static int cols = 1280 / C::GRID_SIZE;
 static int lastLine = 720 / C::GRID_SIZE - 1;
 
-Game::Game(sf::RenderWindow * win) {
+Game::Game(sf::RenderWindow * win) : camera(this) {
 	// Initialize SFML window
 	this->win = win;
 	bg = sf::RectangleShape(Vector2f((float)win->getSize().x, (float)win->getSize().y));
@@ -132,6 +132,8 @@ void Game::update(double deltaTime) {
 	{
 		entity.applyMovement(deltaTime);
 	}
+
+	camera.update();
 	
 	afterParts.update(deltaTime);
 }

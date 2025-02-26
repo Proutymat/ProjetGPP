@@ -21,7 +21,7 @@ public:
 	float gameTime = 0.0;
 	double tickTimer = 0.0;
 	float gravity = 144.0f;
-	Camera camera = Camera(this);
+	Camera camera;
 	
 	sf::RenderWindow* win = nullptr;
 

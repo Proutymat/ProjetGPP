@@ -35,6 +35,7 @@ public:
     
     void setShake(int time, float amplitude = 2);
     void checkShake();
+    void update();
 
 private:
     Game* game;
