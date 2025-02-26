@@ -2,34 +2,35 @@
 #include <imgui.h>
 #include <array>
 #include <vector>
-
 #include "C.hpp"
 #include "Game.hpp"
-#include "Entity.hpp"
-
 #include "HotReloadShader.hpp"
 
-Game*		Game::me = 0;
-static int	cols = C::RES_X / C::GRID_SIZE;
-static int	lastLine = C::RES_Y / C::GRID_SIZE - 1;
+
+static int cols = 1280 / C::GRID_SIZE;
+static int lastLine = 720 / C::GRID_SIZE - 1;
 
 Game::Game(sf::RenderWindow * win) {
+	// Initialize SFML window
 	this->win = win;
-	me = this;
 	bg = sf::RectangleShape(Vector2f((float)win->getSize().x, (float)win->getSize().y));
 
+	// Load background texture
 	bool isOk = tex.loadFromFile("res/bg_stars.png");
 	if (!isOk) {
 		printf("ERR : LOAD FAILED\n");
 	}
 	bg.setTexture(&tex);
-	bg.setSize(sf::Vector2f(C::RES_X, C::RES_Y));
+	bg.setSize(sf::Vector2f(1280, 720));
 
+	// Load background shader
 	bgShader = new HotReloadShader("res/bg.vert", "res/bg.frag");
-	
-	for (int i = 0; i < C::RES_X / C::GRID_SIZE; ++i) 
+
+	// Add ground walls
+	for (int i = 0; i < 1280 / C::GRID_SIZE; ++i) 
 		walls.push_back( Vector2i(i, lastLine) );
 
+	// Add borders and obstacles walls 
 	walls.push_back(Vector2i(0, lastLine-1));
 	walls.push_back(Vector2i(0, lastLine-2));
 	walls.push_back(Vector2i(0, lastLine-3));
@@ -38,31 +39,19 @@ Game::Game(sf::RenderWindow * win) {
 	walls.push_back(Vector2i(cols-1, lastLine - 2));
 	walls.push_back(Vector2i(cols-1, lastLine - 3));
 
-	walls.push_back(Vector2i(cols >>2, lastLine - 1));
 	walls.push_back(Vector2i(cols >>2, lastLine - 2));
 	walls.push_back(Vector2i(cols >>2, lastLine - 3));
 	walls.push_back(Vector2i(cols >>2, lastLine - 4));
 	walls.push_back(Vector2i((cols >> 2) + 1, lastLine - 4));
 	cacheWalls();
 
-	initMainChar();
+	// Player initialization
+	entities.emplace_back(this, 5, 23);
+	player = &entities.back();
 }
 
-void Game::initMainChar(){
-	auto spr = new sf::RectangleShape({ C::GRID_SIZE, C::GRID_SIZE * 2 });
-	spr->setFillColor(sf::Color::Magenta);
-	spr->setOutlineColor(sf::Color::Red);
-	spr->setOutlineThickness(2);
-	spr->setOrigin({ C::GRID_SIZE * 0.5f, C::GRID_SIZE * 2 });
-	auto e = new Entity(spr);
-	e->setCooGrid(3, int(C::RES_Y / C::GRID_SIZE) - 2);
-	e->ry = 0.99f;
-	e->syncPos();
-	ents.push_back(e);
-	printf("ent added");
-}
-
-void Game::cacheWalls(){
+void Game::cacheWalls()
+{
 	wallSprites.clear();
 	for (Vector2i & w : walls) {
 		sf::RectangleShape rect(Vector2f(16,16));
@@ -78,65 +67,28 @@ void Game::processInput(sf::Event ev) {
 		closing = true;
 		return;
 	}
-	
 	if (ev.type == sf::Event::KeyReleased) {
-		int here = 0;
-		if (ev.key.code == Keyboard::K) {
-			int there = 0;
-			walls.clear();
-			cacheWalls();
-		}
-
-		if (ev.key.code == Keyboard::E) {
-		/*	auto spr = new sf::RectangleShape({ C::GRID_SIZE, C::GRID_SIZE * 2 });
-			spr->setFillColor(sf::Color::Magenta);
-			spr->setOutlineColor(sf::Color::Red);
-			spr->setOutlineThickness(2);
-			spr->setOrigin({ C::GRID_SIZE * 0.5f, C::GRID_SIZE * 2});
-			auto e = new Entity( spr );
-			//e->setCooPixel(335, 337);
-			e->setCooGrid(3,int(C::RES_Y / C::GRID_SIZE)-1);
-			printf("ent added");
-			ents.push_back(e);
-		*/}
+		
+	
 	}
 }
 
 
-static double g_time = 0.0;
-static double g_tickTimer = 0.0;
 
-
-void Game::pollInput(double dt) {
+void Game::handleKeyboardEvents(double deltaTime) {
 
 	float lateralSpeed = 8.0;
 	float maxSpeed = 40.0;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
-		if (ents.size()) {
-			auto mainChar = ents[0];
-			if (mainChar) {
-				mainChar->dx -= 5;
-			}
-		}
-	}
+		player->moveX = -20;
 
+	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-		if (ents.size()) {
-			auto mainChar = ents[0];
-			if (mainChar) {
-				mainChar->dx += 5;
-			}
-		}
+		player->moveX = 20;
 	}
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
-		if (ents.size()) {
-			auto mainChar = ents[0];
-			if (mainChar && !mainChar->jumping) {
-				mainChar->dy -= 40;
-				mainChar->setJumping(true);
-			}
-		}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && player->onGround) {
+		player->moveY = -40;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
@@ -166,18 +118,22 @@ int blendModeIndex(sf::BlendMode bm) {
 	return 4;
 };
 
-void Game::update(double dt) {
-	pollInput(dt);
+void Game::update(double deltaTime) {
+	gameTime += deltaTime;
 
-	g_time += dt;
+	// Handle inputs
+	handleKeyboardEvents(deltaTime);
+	
+	if (bgShader) bgShader->update(deltaTime);
+	beforeParts.update(deltaTime);
 
-	for (auto e : ents) 
-		e->update(dt);
-
-	if (bgShader) bgShader->update(dt);
-
-	beforeParts.update(dt);
-	afterParts.update(dt);
+	// Apply entities movement
+	for (Entity& entity : entities)
+	{
+		entity.applyMovement(deltaTime);
+	}
+	
+	afterParts.update(deltaTime);
 }
 
  void Game::draw(sf::RenderWindow & win) {
@@ -189,19 +145,22 @@ void Game::update(double dt) {
 	states.shader = sh;
 	states.texture = &tex;
 	sh->setUniform("texture", tex);
-	//sh->setUniform("time", g_time);
+	//sh->setUniform("time", gameTime);
 	win.draw(bg, states);
 
 	beforeParts.draw(win);
 
+	// Draw walls
 	for (sf::RectangleShape & r : wallSprites)
 		win.draw(r);
 
+	// Draw entities
+	for (Entity& e : entities)
+		e.draw(win);
+
+	// Draw others
 	for (sf::RectangleShape& r : rects) 
 		win.draw(r);
-	
-	for (auto e: ents)
-		e->draw(win);
 
 	afterParts.draw(win);
 }
@@ -210,45 +169,28 @@ void Game::onSpacePressed() {
 	
 }
 
-bool Game::hasCollision(float gridx, float gridy)
+
+bool Game::isWall(int cx, int cy)
 {
-	if (gridx < 1.5)
-		return true;
-
-	auto wallRightX = (C::RES_X / C::GRID_SIZE) -1;
-	if (gridx >= wallRightX)
-		return true;
-
-	for (auto& w : walls) 
-		if(		(w.x == int(gridx))
-			&&	(w.y == int(gridy))) 
-				return true;
-	return false;
-}
-
-
-bool Game::isWall(int cx, int cy){
-	for (Vector2i & w : walls) 
-		if (w.x == cx && w.y == cy)
+	// Check each wall
+	for (Vector2i & wall : walls) {
+		if (wall.x == cx && wall.y == cy)
 			return true;
+	}
 	return false;
 }
 
-void Game::im(){
-	using namespace ImGui;
-	int hre = 0;
-
-	if (TreeNodeEx("Walls", 0)) {
-		for (auto& w : walls) {
-			Value("x",w.x);
-			Value("y",w.y);
-		}
-		TreePop();
-
+void Game::im()
+{
+	bool edit = false;
+	float xx = player->xx;
+	float yy = player->yy;
+	edit |= ImGui::DragFloat("player xx", &xx, 0.1f);
+	edit |= ImGui::DragFloat("player yy", &yy, 0.1f);
+	if (edit) {
+		player->setPositions(xx, yy);
 	}
-	if (TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen)) {
-		for (auto e : ents)
-			e->im();
-		TreePop();
-	}
+
+	ImGui::DragFloat("player dx", &player->moveX, 0.1f);
+	ImGui::DragFloat("player dy", &player->moveY, 0.1f);
 }

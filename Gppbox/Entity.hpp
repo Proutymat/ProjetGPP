@@ -1,36 +1,35 @@
 ﻿#pragma once
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
-#include <SFML/Graphics.hpp>
+class Game;
 
-namespace sf {
-    class RenderWindow;
-}
-
-class Entity{
+class Entity {
 public:
-    sf::Shape * spr = 0;
-    int			cx = 0;
-    int			cy = 0;
-    float		rx = 0.5f;
-    float		ry = 0.0f;
 
-    float		dx = 0.f;
-    float		dy = 0.f;
-    float		gravy = 0.f;
+    /* ATTRIBUTES */
+    
+    // MOVEMENT
+    int cx, cy; // Grid coordinates
+    float xr, yr; // Ratios
+    float xx, yy; // Resulting coordinates
+    float moveX, moveY; // Movement
 
-    float		frx = 0.88f;
-    float		fry = 1.0f;
-    bool		jumping = false;
-    Entity(sf::Shape* spr);
+    sf::RectangleShape sprite;
+    bool onGround = false;
 
-    void			update( double dt );
-    void			setCooPixel( int px, int py);
-    void			setCooGrid( float coox, float cooy);
-    void			syncPos();
-    void			draw(sf::RenderWindow& win);
-    bool			im();
+    
+    /* CONSTRUCTORS */
+        
+    Entity(Game* game, int x, int y);
 
-    void			setJumping(bool onOff);
+    
+    /* METHODS */
 
-    sf::Vector2i	getPosPixel();
+    void setPositions(float x, float y);
+    void applyMovement(double detlaTime);    
+    void draw(sf::RenderWindow& win) const;
+
+private:
+    Game* game;
 };
