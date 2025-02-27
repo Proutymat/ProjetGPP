@@ -36,7 +36,7 @@ public:
     
     void setShake(int time, float amplitude = 2);
     void checkShake();
-    void update();
+    void update(float deltaTime);
     void imgui();
 
 private:

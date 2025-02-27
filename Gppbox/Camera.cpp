@@ -51,12 +51,19 @@ void Camera::checkShake() {
     }
 }
 
-void Camera::update()
+void Camera::update(float deltaTime)
 {
-    checkShake();
     
-    x = game->player->xx + shakeX;
-    y = game->player->yy + shakeY;
+    
+    // Lerppppp motherfucker
+    auto blend = static_cast<float>(1.0f - std::pow(0.5F, deltaTime * lerpSmoothingFactor));
+    x -= (x - game->player->xx) * blend + 0.1F;
+    y -= (y - game->player->yy) * blend + 0.1F;
+
+    // Shaaaake bitch
+    checkShake();
+    x += shakeX;
+    y += shakeY;
     
     auto view = game->win->getDefaultView();
     view.setCenter(x, y);

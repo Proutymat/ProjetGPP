@@ -50,6 +50,9 @@ camera(Camera(this)){
 	// Player initialization
 	entities.emplace_back(this, 5, 23);
 	player = &entities.back();
+
+	camera.x = player->xx;
+	camera.y = player->yy;
 }
 
 void Game::cacheWalls()
@@ -135,7 +138,7 @@ void Game::update(double deltaTime) {
 		entity.applyMovement(deltaTime);
 	}
 
-	camera.update();;
+	camera.update(deltaTime);;
 	afterParts.update(deltaTime);
 }
 
@@ -187,6 +190,7 @@ void Game::im()
 {
 	camera.imgui();
 
+	// Player header
 	if (ImGui::CollapsingHeader("Player"))
 	{
 		bool edit = false;
