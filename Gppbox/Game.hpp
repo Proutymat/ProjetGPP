@@ -16,6 +16,9 @@ class Game {
 public:
 
 	/* ATTRIBUTES */
+
+	int screenSizeX = 1280;
+	int screenSizeY = 720;
 	
 	float gameTime = 0.0;
 	double tickTimer = 0.0;

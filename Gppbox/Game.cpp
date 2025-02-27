@@ -6,10 +6,6 @@
 #include "Game.hpp"
 #include "HotReloadShader.hpp"
 
-
-static int cols = 1280 / C::GRID_SIZE;
-static int lastLine = 720 / C::GRID_SIZE - 1;
-
 Game::Game(sf::RenderWindow * win) : camera(this), map() {
 	// Initialize SFML window
 	this->win = win;
@@ -22,7 +18,7 @@ Game::Game(sf::RenderWindow * win) : camera(this), map() {
 		printf("ERR : LOAD FAILED\n");
 	}
 	bg.setTexture(&tex);
-	bg.setSize(sf::Vector2f(1280, 720));
+	bg.setSize(sf::Vector2f(screenSizeX, screenSizeY));
 
 	// Load background shader
 	bgShader = new HotReloadShader("res/bg.vert", "res/bg.frag");
@@ -45,9 +41,15 @@ void Game::processInput(sf::Event ev) {
 		closing = true;
 		return;
 	}
-	if (ev.type == sf::Event::KeyReleased) {
-		
-	
+
+	// Left mouse click : add wall
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		int cx = (camera.mouseX - screenSizeX / 2) / C::GRID_SIZE;
+		int cy = (camera.mouseY - screenSizeY / 2) / C::GRID_SIZE;
+		if (!isWall(cx, cy)) {
+			map.addWall(cx, cy);
+		}
 	}
 }
 
@@ -161,6 +163,7 @@ bool Game::isWall(int cx, int cy)
 
 void Game::im()
 {
+	map.imgui();
 	camera.imgui();
 
 	// Player header

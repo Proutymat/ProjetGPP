@@ -5,6 +5,8 @@
 #include "SFML/Graphics.hpp"
 #include "SFML/Window.hpp"
 #include "C.hpp"
+#include <imgui.h>
+
 
 class Map
 {
@@ -27,4 +29,6 @@ public:
     /* METHODS */
 
     void cacheWalls();
+    void addWall(int x, int y);
+    void imgui();
 };

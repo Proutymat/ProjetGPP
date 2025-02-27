@@ -39,3 +39,38 @@ void Map::cacheWalls()
         wallSprites.push_back(rect);
     }
 }
+
+void Map::addWall(int x, int y)
+{
+    walls.push_back(sf::Vector2i(x, y));
+    cacheWalls();
+}
+
+void Map::imgui()
+{
+    // Map header
+    if (ImGui::CollapsingHeader("Map"))
+    {
+        // Save map in a file
+        if (ImGui::Button("SAVE MAP")) {
+            FILE* f = fopen("map.txt", "w");
+            for (sf::Vector2i & wall : walls) {
+                fprintf(f, "%d %d\n", wall.x, wall.y);
+            }
+            fclose(f);
+        }
+        // Load map from a file
+        if (ImGui::Button("LOAD MAP")) {
+            FILE* f = fopen("map.txt", "r");
+            walls.clear();
+            while (!feof(f)) {
+                int x, y;
+                fscanf(f, "%d %d\n", &x, &y);
+                walls.push_back(sf::Vector2i(x, y));
+            }
+            fclose(f);
+            cacheWalls();
+        }
+    }
+    
+}
