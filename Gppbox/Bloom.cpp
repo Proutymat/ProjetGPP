@@ -130,6 +130,9 @@ void Bloom::render(
 	c.a = (int)(c.a * 0.8);
 	sp.setColor(c);
 
+	sf::View view = window.getView();
+	sp.setPosition(view.getCenter() - view.getSize() / 2.f);
+
 	window.draw(sp, rs);
 	//window.draw(sp);
 }
