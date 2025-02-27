@@ -10,9 +10,11 @@
 static int cols = 1280 / C::GRID_SIZE;
 static int lastLine = 720 / C::GRID_SIZE - 1;
 
-Game::Game(sf::RenderWindow * win) : camera(this) {
+Game::Game(sf::RenderWindow * win) :
+camera(Camera(this)){
 	// Initialize SFML window
 	this->win = win;
+	
 	bg = sf::RectangleShape(Vector2f((float)win->getSize().x, (float)win->getSize().y));
 
 	// Load background texture
@@ -133,8 +135,7 @@ void Game::update(double deltaTime) {
 		entity.applyMovement(deltaTime);
 	}
 
-	camera.update();
-	
+	camera.update();;
 	afterParts.update(deltaTime);
 }
 
@@ -184,15 +185,20 @@ bool Game::isWall(int cx, int cy)
 
 void Game::im()
 {
-	bool edit = false;
-	float xx = player->xx;
-	float yy = player->yy;
-	edit |= ImGui::DragFloat("player xx", &xx, 0.1f);
-	edit |= ImGui::DragFloat("player yy", &yy, 0.1f);
-	if (edit) {
-		player->setPositions(xx, yy);
-	}
+	camera.imgui();
 
-	ImGui::DragFloat("player dx", &player->moveX, 0.1f);
-	ImGui::DragFloat("player dy", &player->moveY, 0.1f);
+	if (ImGui::CollapsingHeader("Player"))
+	{
+		bool edit = false;
+		float xx = player->xx;
+		float yy = player->yy;
+		edit |= ImGui::DragFloat("player xx", &xx, 0.1f);
+		edit |= ImGui::DragFloat("player yy", &yy, 0.1f);
+		if (edit) {
+			player->setPositions(xx, yy);
+		}
+
+		ImGui::DragFloat("player dx", &player->moveX, 0.1f);
+		ImGui::DragFloat("player dy", &player->moveY, 0.1f);
+	}
 }

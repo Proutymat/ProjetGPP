@@ -12,6 +12,9 @@ Camera::Camera(Game* game) : game(game) {
     lastShakeUpdate = game->gameTime;
 }
 
+
+/* METHODS */
+
 void Camera::setShake(int time, float amplitude) {
     // Change shakeTime only if the new time is greater
     if (time > shakeTime || time < 0) {
@@ -50,13 +53,32 @@ void Camera::checkShake() {
 
 void Camera::update()
 {
-     sf::View view = game->win->getView();
- 
-     // Lerp the camera to the player's position
-     view.setCenter(game->player->xx + shakeX, game->player->yy + shakeY);
- 
-     // Apply the view to the window
-     game->win->setView(view);
+    checkShake();
+    
+    x = game->player->xx + shakeX;
+    y = game->player->yy + shakeY;
+    
+    auto view = game->win->getDefaultView();
+    view.setCenter(x, y);
+    game->win->setView(view);
+}
 
-    std::cout << game->player->xx << std::endl;
+void Camera::imgui()
+{
+    // Camera header
+    if (ImGui::CollapsingHeader("Camera")) {
+        ImGui::Value("x", x);
+        ImGui::Value("y", y);
+
+        // Activate or deactivate the camera shake
+        if (ImGui::Button("Shake")) {
+            if (shakeTime == -1) setShake(0, 2);
+            else setShake(-1, 2);
+        }
+
+        // Set the amplitude if the camera is shaking
+        if (shakeTime != 0) {
+            ImGui::SliderFloat("Shame Amplitude", &shakeAmplitude, 0, 100);
+        }
+    }
 }

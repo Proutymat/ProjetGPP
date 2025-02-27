@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <random>
+#include <imgui.h>
 
 class Game;
 
@@ -36,6 +37,7 @@ public:
     void setShake(int time, float amplitude = 2);
     void checkShake();
     void update();
+    void imgui();
 
 private:
     Game* game;
