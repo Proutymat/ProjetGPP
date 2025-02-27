@@ -10,8 +10,7 @@
 static int cols = 1280 / C::GRID_SIZE;
 static int lastLine = 720 / C::GRID_SIZE - 1;
 
-Game::Game(sf::RenderWindow * win) :
-camera(Camera(this)){
+Game::Game(sf::RenderWindow * win) : camera(this), map() {
 	// Initialize SFML window
 	this->win = win;
 	
@@ -28,24 +27,7 @@ camera(Camera(this)){
 	// Load background shader
 	bgShader = new HotReloadShader("res/bg.vert", "res/bg.frag");
 
-	// Add ground walls
-	for (int i = 0; i < 1280 / C::GRID_SIZE; ++i) 
-		walls.push_back( Vector2i(i, lastLine) );
-
-	// Add borders and obstacles walls 
-	walls.push_back(Vector2i(0, lastLine-1));
-	walls.push_back(Vector2i(0, lastLine-2));
-	walls.push_back(Vector2i(0, lastLine-3));
-
-	walls.push_back(Vector2i(cols-1, lastLine - 1));
-	walls.push_back(Vector2i(cols-1, lastLine - 2));
-	walls.push_back(Vector2i(cols-1, lastLine - 3));
-
-	walls.push_back(Vector2i(cols >>2, lastLine - 2));
-	walls.push_back(Vector2i(cols >>2, lastLine - 3));
-	walls.push_back(Vector2i(cols >>2, lastLine - 4));
-	walls.push_back(Vector2i((cols >> 2) + 1, lastLine - 4));
-	cacheWalls();
+	
 
 	// Player initialization
 	entities.emplace_back(this, 5, 23);
@@ -55,16 +37,7 @@ camera(Camera(this)){
 	camera.y = player->yy;
 }
 
-void Game::cacheWalls()
-{
-	wallSprites.clear();
-	for (Vector2i & w : walls) {
-		sf::RectangleShape rect(Vector2f(16,16));
-		rect.setPosition((float)w.x * C::GRID_SIZE, (float)w.y * C::GRID_SIZE);
-		rect.setFillColor(sf::Color(0x07ff07ff));
-		wallSprites.push_back(rect);
-	}
-}
+
 
 void Game::processInput(sf::Event ev) {
 	if (ev.type == sf::Event::Closed) {
@@ -124,7 +97,7 @@ int blendModeIndex(sf::BlendMode bm) {
 };
 
 void Game::update(double deltaTime) {
-	gameTime += deltaTime;
+	gameTime += static_cast<float>(deltaTime);
 
 	// Handle inputs
 	handleKeyboardEvents(deltaTime);
@@ -138,7 +111,7 @@ void Game::update(double deltaTime) {
 		entity.applyMovement(deltaTime);
 	}
 
-	camera.update(deltaTime);;
+	camera.update(static_cast<float>(deltaTime));
 	afterParts.update(deltaTime);
 }
 
@@ -157,7 +130,7 @@ void Game::update(double deltaTime) {
 	beforeParts.draw(win);
 
 	// Draw walls
-	for (sf::RectangleShape & r : wallSprites)
+	for (sf::RectangleShape & r : map.wallSprites)
 		win.draw(r);
 
 	// Draw entities
@@ -179,7 +152,7 @@ void Game::onSpacePressed() {
 bool Game::isWall(int cx, int cy)
 {
 	// Check each wall
-	for (Vector2i & wall : walls) {
+	for (Vector2i & wall : map.walls) {
 		if (wall.x == cx && wall.y == cy)
 			return true;
 	}

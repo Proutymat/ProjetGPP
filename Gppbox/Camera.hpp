@@ -13,6 +13,8 @@ public:
 
     float x = 0; /**< The x-coordinate of the camera's position */
     float y = 0; /**< The y-coordinate of the camera's position */
+    int mouseX = 0; /**< The x-coordinate of the camera's mouse position */
+    int mouseY = 0; /**< The y-coordinate of the camera's mouse position */
 
     float lerpSmoothingFactor = 11;
 

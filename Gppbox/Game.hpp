@@ -1,14 +1,13 @@
 #pragma once
 
 #include <vector>
-#include "SFML/Graphics.hpp"
-#include "SFML/System.hpp"
-#include "SFML/Window.hpp"
 #include "sys.hpp"
 #include "Particle.hpp"
 #include "ParticleMan.hpp"
 #include "Entity.hpp"
 #include "Camera.hpp"
+#include "Map.hpp"
+
 
 using namespace sf;
 
@@ -21,7 +20,9 @@ public:
 	float gameTime = 0.0;
 	double tickTimer = 0.0;
 	float gravity = 144.0f;
+	
 	Camera camera;
+	Map map;
 	
 	sf::RenderWindow* win = nullptr;
 
@@ -32,8 +33,6 @@ public:
 
 	bool closing = false;
 	
-	std::vector<sf::Vector2i> walls;
-	std::vector<sf::RectangleShape> wallSprites;
 	std::vector<Entity> entities;
 
 	Entity* player = nullptr;
@@ -42,9 +41,7 @@ public:
 	ParticleMan afterParts;
 
 	Game(sf::RenderWindow * win);
-
-	void cacheWalls();
-
+	
 	void processInput(sf::Event ev);
 	bool wasPressed = false;
 	void handleKeyboardEvents(double deltaTime);
