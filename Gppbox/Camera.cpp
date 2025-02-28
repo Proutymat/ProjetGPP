@@ -53,8 +53,10 @@ void Camera::checkShake() {
 
 void Camera::update(float deltaTime)
 {
-    mouseX = sf::Mouse::getPosition(*game->win).x + x;
-    mouseY = sf::Mouse::getPosition(*game->win).y + y;
+    Vector2i mousePosition = sf::Mouse::getPosition(*game->win) + Vector2i(game->win->getView().getCenter() - game->win->getView().getSize() / 2.f);
+    
+    mouseX = mousePosition.x + x;
+    mouseY = mousePosition.y + y;
     
     // Lerppppp motherfucker
     auto blend = static_cast<float>(1.0f - std::pow(0.5F, deltaTime * lerpSmoothingFactor));
@@ -63,6 +65,8 @@ void Camera::update(float deltaTime)
     
     // Shaaaake bitch
     checkShake();
+
+    std::cout << "CAMERA : " << x << " " << y << std::endl;
 
     auto view = game->win->getDefaultView();
     view.setCenter(x + shakeX, y + shakeY);

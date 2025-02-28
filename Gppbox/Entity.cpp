@@ -56,11 +56,13 @@ void Entity::applyMovement(double detlaTime)
 	if (game->isWall(cx+1,cy) && xr >= 0.0f) {
 		xr = 0;
 		moveX = 0;
+		direction = -1; // IA Mustache
 	}
 	// Left check
 	if (game->isWall(cx-1,cy) && xr <= 0.0f) {
 		xr = 0.0f;
 		moveX = 0;
+		direction = 1; // IA Mustache
 	}
 
 	

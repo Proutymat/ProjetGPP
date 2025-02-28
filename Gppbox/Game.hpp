@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <SFML/Window/Joystick.hpp>
 #include "sys.hpp"
 #include "Particle.hpp"
 #include "ParticleMan.hpp"
@@ -48,7 +49,7 @@ public:
 	void processInput(sf::Event ev);
 	bool wasPressed = false;
 	void handleKeyboardEvents(double deltaTime);
-	void onSpacePressed();
+	void handleEnemiesMovement();
 
 	void update(double deltaTime);
 

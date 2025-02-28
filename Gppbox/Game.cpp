@@ -45,7 +45,7 @@ void Game::processInput(sf::Event ev) {
 	// Left mouse click : add wall
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
-		int cx = (camera.mouseX - screenSizeX / 2) / C::GRID_SIZE;
+		int cx = (camera.mouseX) / C::GRID_SIZE;
 		int cy = (camera.mouseY - screenSizeY / 2) / C::GRID_SIZE;
 		if (!isWall(cx, cy)) {
 			map.addWall(cx, cy);
@@ -56,27 +56,31 @@ void Game::processInput(sf::Event ev) {
 
 
 void Game::handleKeyboardEvents(double deltaTime) {
-
-	float lateralSpeed = 8.0;
-	float maxSpeed = 40.0;
+	
+	// Left direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
 		player->moveX = -20;
-
 	}
+	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) < -20) {
+        player->moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
+		
+	}
+
+	// Right direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
 		player->moveX = 20;
 	}
+	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) > 20) {
+        player->moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
+    }
+	printf("JOYSTICK AXIS = %f\n", Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::Y));
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && player->onGround) {
+	// Jump
+	if (((Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) || Joystick::isButtonPressed(0, 1)) && player->onGround) {
 		player->moveY = -40;
 	}
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::T)) {
-
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+	else if ((Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) || Joystick::isButtonPressed(0, 1)) {
 		if (!wasPressed) {
-			onSpacePressed();
 			wasPressed = true;
 		}
 	}
@@ -98,11 +102,21 @@ int blendModeIndex(sf::BlendMode bm) {
 	return 4;
 };
 
+void Game::handleEnemiesMovement()
+{
+	for (int i = 1; i < entities.size(); i++){
+		entities[i].moveX += 10 * entities[i].direction;
+	}
+}
+
 void Game::update(double deltaTime) {
 	gameTime += static_cast<float>(deltaTime);
 
 	// Handle inputs
 	handleKeyboardEvents(deltaTime);
+
+	// Handle enemies movement
+	handleEnemiesMovement();
 	
 	if (bgShader) bgShader->update(deltaTime);
 	beforeParts.update(deltaTime);
@@ -146,11 +160,6 @@ void Game::update(double deltaTime) {
 	afterParts.draw(win);
 }
 
-void Game::onSpacePressed() {
-	
-}
-
-
 bool Game::isWall(int cx, int cy)
 {
 	// Check each wall
@@ -180,5 +189,14 @@ void Game::im()
 
 		ImGui::DragFloat("player dx", &player->moveX, 0.1f);
 		ImGui::DragFloat("player dy", &player->moveY, 0.1f);
+	}
+
+	// Entities header
+	if (ImGui::CollapsingHeader("Entities"))
+	{
+		ImGui::Text("Number of entities : %d", entities.size());
+		if (ImGui::Button("Add new enemy")) {
+			entities.emplace_back(this, 50, -100);
+		}
 	}
 }
