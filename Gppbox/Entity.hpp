@@ -22,14 +22,16 @@ public:
 
     
     /* CONSTRUCTORS */
-        
-    Entity(Game* game, int x, int y);
+
+    Entity();
+    Entity(Game* game, int x, int y, bool isEnemy);
 
     
     /* METHODS */
 
     void setPositions(float x, float y);
-    void applyMovement(double detlaTime);    
+    void applyMovement(double detlaTime);
+    bool collideWith(Entity& other);
     void draw(sf::RenderWindow& win) const;
 
 private:

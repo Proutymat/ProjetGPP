@@ -39,7 +39,7 @@ public:
 	
 	std::vector<Entity> entities;
 
-	Entity* player = nullptr;
+	Entity player;
 
 	ParticleMan beforeParts;
 	ParticleMan afterParts;
@@ -56,5 +56,6 @@ public:
 	void draw(sf::RenderWindow& win);
 
 	bool isWall(int cx, int cy);
+	bool PlayerCollideWithEnemy();
 	void im();
 };

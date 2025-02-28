@@ -26,11 +26,10 @@ Game::Game(sf::RenderWindow * win) : camera(this), map() {
 	
 
 	// Player initialization
-	entities.emplace_back(this, 5, 23);
-	player = &entities.back();
+	player = Entity(this, 5, 23, false);
 
-	camera.x = player->xx;
-	camera.y = player->yy;
+	camera.x = player.xx;
+	camera.y = player.yy;
 }
 
 
@@ -45,7 +44,7 @@ void Game::processInput(sf::Event ev) {
 	// Left mouse click : add wall
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
-		int cx = (camera.mouseX) / C::GRID_SIZE;
+		int cx = (camera.mouseX - screenSizeX / 2) / C::GRID_SIZE;
 		int cy = (camera.mouseY - screenSizeY / 2) / C::GRID_SIZE;
 		if (!isWall(cx, cy)) {
 			map.addWall(cx, cy);
@@ -59,25 +58,24 @@ void Game::handleKeyboardEvents(double deltaTime) {
 	
 	// Left direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
-		player->moveX = -20;
+		player.moveX = -20;
 	}
 	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) < -20) {
-        player->moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
+        player.moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
 		
 	}
 
 	// Right direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-		player->moveX = 20;
+		player.moveX = 20;
 	}
 	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) > 20) {
-        player->moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
+        player.moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
     }
-	printf("JOYSTICK AXIS = %f\n", Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::Y));
 
 	// Jump
-	if (((Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) || Joystick::isButtonPressed(0, 1)) && player->onGround) {
-		player->moveY = -40;
+	if (((Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) || Joystick::isButtonPressed(0, 1)) && player.onGround) {
+		player.moveY = -40;
 	}
 	else if ((Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) || Joystick::isButtonPressed(0, 1)) {
 		if (!wasPressed) {
@@ -104,8 +102,8 @@ int blendModeIndex(sf::BlendMode bm) {
 
 void Game::handleEnemiesMovement()
 {
-	for (int i = 1; i < entities.size(); i++){
-		entities[i].moveX += 10 * entities[i].direction;
+	for (int i = 0; i < entities.size(); i++){
+		entities[i].moveX = 10 * entities[i].direction;
 	}
 }
 
@@ -121,11 +119,15 @@ void Game::update(double deltaTime) {
 	if (bgShader) bgShader->update(deltaTime);
 	beforeParts.update(deltaTime);
 
+	player.applyMovement(deltaTime);
+	
 	// Apply entities movement
 	for (Entity& entity : entities)
 	{
 		entity.applyMovement(deltaTime);
 	}
+
+	PlayerCollideWithEnemy();
 
 	camera.update(static_cast<float>(deltaTime));
 	afterParts.update(deltaTime);
@@ -149,9 +151,11 @@ void Game::update(double deltaTime) {
 	for (sf::RectangleShape & r : map.wallSprites)
 		win.draw(r);
 
+	player.draw(win);
+	
 	// Draw entities
-	for (Entity& e : entities)
-		e.draw(win);
+	for (Entity& entity : entities)
+		entity.draw(win);
 
 	// Draw others
 	for (sf::RectangleShape& r : rects) 
@@ -170,6 +174,20 @@ bool Game::isWall(int cx, int cy)
 	return false;
 }
 
+bool Game::PlayerCollideWithEnemy()
+{
+	for (Entity& entity : entities)
+    {
+        if (player.collideWith(entity))
+        {
+        	player.setPositions(75, 0);
+        	return true;
+        }
+        	
+    }
+    return false;	
+}
+
 void Game::im()
 {
 	map.imgui();
@@ -179,16 +197,16 @@ void Game::im()
 	if (ImGui::CollapsingHeader("Player"))
 	{
 		bool edit = false;
-		float xx = player->xx;
-		float yy = player->yy;
+		float xx = player.xx;
+		float yy = player.yy;
 		edit |= ImGui::DragFloat("player xx", &xx, 0.1f);
 		edit |= ImGui::DragFloat("player yy", &yy, 0.1f);
 		if (edit) {
-			player->setPositions(xx, yy);
+			player.setPositions(xx, yy);
 		}
 
-		ImGui::DragFloat("player dx", &player->moveX, 0.1f);
-		ImGui::DragFloat("player dy", &player->moveY, 0.1f);
+		ImGui::DragFloat("player dx", &player.moveX, 0.1f);
+		ImGui::DragFloat("player dy", &player.moveY, 0.1f);
 	}
 
 	// Entities header
@@ -196,7 +214,8 @@ void Game::im()
 	{
 		ImGui::Text("Number of entities : %d", entities.size());
 		if (ImGui::Button("Add new enemy")) {
-			entities.emplace_back(this, 50, -100);
+			entities.emplace_back(this, 50, -100, true);
+			entities.back().direction = 1;
 		}
 	}
 }

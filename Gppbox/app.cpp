@@ -150,7 +150,7 @@ int main()
         window.clear();
 
 
-		window.setView(v);//keep view up to date in case we want to do something with like... you know what.
+		//window.setView(v);//keep view up to date in case we want to do something with like... you know what.
 
 		if (ImGui::CollapsingHeader("Bloom Control")) {
 			ImGui::SliderFloat("bloomWidth", &bloomWidth, 0, 55);//55 is max acceptable kernel size for constants, otherwise we should use a texture

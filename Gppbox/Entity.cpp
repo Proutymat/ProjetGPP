@@ -3,14 +3,17 @@
 
 #include "C.hpp"
 
-Entity::Entity(Game* game, int cx, int cy)
+Entity::Entity(){};
+
+Entity::Entity(Game* game, int cx, int cy, bool isEnemy)
 	: sprite(sf::Vector2f(C::GRID_SIZE, C::GRID_SIZE)),
 	  cx(cx), cy(cy), xr(0), yr(0),
 	  xx(0), yy(0), moveX(0), moveY(0),
 	  game(game)
 {
 	sprite.setPosition(xx, yy);
-	sprite.setFillColor(sf::Color(0xff0707ff));
+	if (isEnemy) sprite.setFillColor(sf::Color(sf::Color::Red));
+	else sprite.setFillColor(sf::Color(sf::Color::White));
 }
 
 void Entity::setPositions(float x, float y)
@@ -74,6 +77,17 @@ void Entity::applyMovement(double detlaTime)
 	yy = (cy + yr) * C::GRID_SIZE;
 	
 	sprite.setPosition(xx, yy);
+}
+
+bool Entity::collideWith(Entity& other)
+{
+    if (cx == other.cx && cy == other.cy) {
+        return true;
+    }
+    else
+    {
+	    return false;
+    }
 }
 
 void Entity::draw(sf::RenderWindow& win) const

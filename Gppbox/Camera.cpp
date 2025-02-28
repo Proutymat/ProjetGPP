@@ -53,20 +53,20 @@ void Camera::checkShake() {
 
 void Camera::update(float deltaTime)
 {
-    Vector2i mousePosition = sf::Mouse::getPosition(*game->win) + Vector2i(game->win->getView().getCenter() - game->win->getView().getSize() / 2.f);
-    
-    mouseX = mousePosition.x + x;
-    mouseY = mousePosition.y + y;
+    mouseX = sf::Mouse::getPosition(*game->win).x + x;
+    mouseY = sf::Mouse::getPosition(*game->win).y + y;
     
     // Lerppppp motherfucker
     auto blend = static_cast<float>(1.0f - std::pow(0.5F, deltaTime * lerpSmoothingFactor));
-    if (x - game->player->xx > 5 || x - game->player->xx < -5 ) x -= (x - game->player->xx) * blend;
-    if (y - game->player->yy > 5 || y - game->player->yy < -5 ) y -= (y - game->player->yy) * blend;
+    if (x - game->player.xx > 5 || x - game->player.xx < -5 ) x -= (x - game->player.xx) * blend;
+    if (y - game->player.yy > 5 || y - game->player.yy < -5 ) y -= (y - game->player.yy) * blend;
+
+    //printf("CAMERA %f %f\n",x, y);
     
     // Shaaaake bitch
     checkShake();
 
-    std::cout << "CAMERA : " << x << " " << y << std::endl;
+    //  std::cout << "CAMERA : " << x << " " << y << std::endl;
 
     auto view = game->win->getDefaultView();
     view.setCenter(x + shakeX, y + shakeY);
