@@ -24,7 +24,7 @@ public:
     std::uniform_real_distribution<float> rand_float{0.0, 1.0}; /**< The random float generator */
     float shakeX = 0; /**< The x-coordinate of the camera's shake */
     float shakeY = 0; /**< The y-coordinate of the camera's shake */
-    int shakeTime = 0; /**< The time to shake the camera, positives is the time to shake, 0 is not shaking, negatives shakes indefinitely */
+    float shakeTime = 0; /**< The time to shake the camera, positives is the time to shake, 0 is not shaking, negatives shakes indefinitely */
     double lastShakeUpdate; /**< The time of the last shake update */
     float shakeAmplitude = 2; /**< The amplitude of the camera shake */
 
@@ -36,7 +36,7 @@ public:
 
     /* METHODS */
     
-    void setShake(int time, float amplitude = 2);
+    void setShake(float time, float amplitude = 2);
     void checkShake();
     void update(float deltaTime);
     void imgui();

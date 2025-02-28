@@ -55,19 +55,19 @@ void Game::processInput(sf::Event ev) {
 
 
 void Game::handleKeyboardEvents(double deltaTime) {
+	player.moveX = 0;
 	
 	// Left direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
-		player.moveX = -20;
+		player.moveX += -20;
 	}
 	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) < -20) {
         player.moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
-		
 	}
 
 	// Right direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-		player.moveX = 20;
+		player.moveX += 20;
 	}
 	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) > 20) {
         player.moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
@@ -84,6 +84,12 @@ void Game::handleKeyboardEvents(double deltaTime) {
 	}
 	else {
 		wasPressed = false;
+	}
+
+	// Shooting
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E) || Joystick::isButtonPressed(0, 7)) {
+		player.moveX += -10;
+		camera.setShake(0.05, 2);
 	}
 
 }

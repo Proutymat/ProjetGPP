@@ -15,7 +15,7 @@ Camera::Camera(Game* game) : game(game) {
 
 /* METHODS */
 
-void Camera::setShake(int time, float amplitude) {
+void Camera::setShake(float time, float amplitude) {
     // Change shakeTime only if the new time is greater
     if (time > shakeTime || time < 0) {
         shakeTime = time;
@@ -37,11 +37,11 @@ void Camera::makeCameraShake() {
 void Camera::checkShake() {
     shakeX = 0;
     shakeY = 0;
-
+    
     // Shake for a given time
     if (shakeTime > 0) {
         makeCameraShake();
-        shakeTime -= static_cast<int>(game->gameTime - lastShakeUpdate);
+        shakeTime -= game->gameTime - lastShakeUpdate;
         lastShakeUpdate = game->gameTime;
         if (shakeTime < 0) shakeTime = 0;
     }
@@ -79,6 +79,7 @@ void Camera::imgui()
     if (ImGui::CollapsingHeader("Camera")) {
         ImGui::Value("x", x);
         ImGui::Value("y", y);
+        ImGui::Value("ShakeTime", shakeTime);
 
         // Activate or deactivate the camera shake
         if (ImGui::Button("Shake")) {
