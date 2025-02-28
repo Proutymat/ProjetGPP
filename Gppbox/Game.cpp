@@ -60,17 +60,21 @@ void Game::handleKeyboardEvents(double deltaTime) {
 	// Left direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
 		player.moveX += -20;
+		player.direction = -1;
 	}
 	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) < -20) {
         player.moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
+		player.direction = -1;
 	}
 
 	// Right direction
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
 		player.moveX += 20;
+		player.direction = 1;
 	}
 	else if (Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) > 20) {
         player.moveX = Joystick::getAxisPosition(sf::Joystick::X, sf::Joystick::Axis::X) * 0.25F;
+		player.direction = 1;
     }
 
 	// Jump
@@ -87,11 +91,20 @@ void Game::handleKeyboardEvents(double deltaTime) {
 	}
 
 	// Shooting
+	fireRateTimer += gameTime - lastFireRateTimeUpdate;
+	lastFireRateTimeUpdate = gameTime;
+	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E) || Joystick::isButtonPressed(0, 7)) {
-		player.moveX += -10;
+		player.moveX += -10 * player.direction;
 		camera.setShake(0.05, 2);
+		if (fireRateTimer >= fireRate)
+		{
+			fireRateTimer = 0;
+			bullets.emplace_back(player.direction, player.xx, player.yy + rand_float(seed), gameTime);
+		}
 	}
 
+	
 }
 
 static sf::VertexArray va;
@@ -115,7 +128,6 @@ void Game::handleEnemiesMovement()
 
 void Game::update(double deltaTime) {
 	gameTime += static_cast<float>(deltaTime);
-
 	// Handle inputs
 	handleKeyboardEvents(deltaTime);
 
@@ -132,6 +144,46 @@ void Game::update(double deltaTime) {
 	{
 		entity.applyMovement(deltaTime);
 	}
+
+
+	// Update bullets
+	int i = 0;
+	std::vector<int> bulletsToDelete;
+	std::vector<int> enemiesToDelete;
+	for (Bullet& bullet : bullets)
+	{
+		// Update bullets, destroy them if life time is over or if they hit a wall
+		if (bullet.update(deltaTime, map.walls, gameTime))
+		{
+			bulletsToDelete.emplace_back(i);
+		}
+		else
+		{
+			int k = 0;
+			for (Entity& entity : entities)
+			{
+				if (bullet.collideWith(entity))
+				{
+					bulletsToDelete.emplace_back(i);
+					enemiesToDelete.emplace_back(k);
+				}
+			}
+		}
+		
+		i++;
+	}	
+
+	// Destroy bullets and enemies
+	for (int indice : bulletsToDelete)
+	{
+		bullets.erase(bullets.begin() + indice);
+	}
+	for (int indice : enemiesToDelete)
+	{
+		entities.erase(entities.begin() + indice);
+	}
+	bulletsToDelete.clear();
+	enemiesToDelete.clear();
 
 	PlayerCollideWithEnemy();
 
@@ -166,6 +218,10 @@ void Game::update(double deltaTime) {
 	// Draw others
 	for (sf::RectangleShape& r : rects) 
 		win.draw(r);
+
+	// Draw bullets
+	for (Bullet& bullet : bullets)
+		bullet.draw(win);
 
 	afterParts.draw(win);
 }
@@ -202,6 +258,7 @@ void Game::im()
 	// Player header
 	if (ImGui::CollapsingHeader("Player"))
 	{
+		ImGui::Value("NbBullets", (int)bullets.size());
 		bool edit = false;
 		float xx = player.xx;
 		float yy = player.yy;

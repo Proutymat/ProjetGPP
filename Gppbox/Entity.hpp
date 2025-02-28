@@ -15,7 +15,7 @@ public:
     float xx, yy; // Resulting coordinates
     float moveX, moveY; // Movement
 
-    int direction = 0; // -1 left, 0 none, 1 right
+    int direction = 1; // -1 left, 0 none, 1 right
 
     sf::RectangleShape sprite;
     bool onGround = false;

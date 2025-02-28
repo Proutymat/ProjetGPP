@@ -28,6 +28,7 @@ void Entity::setPositions(float x, float y)
 
 void Entity::applyMovement(double detlaTime)
 {
+	
 	// VERTICAL MOVEMENT
 	yr += moveY * detlaTime;
 

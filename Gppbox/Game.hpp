@@ -3,11 +3,13 @@
 #include <vector>
 #include <SFML/Window/Joystick.hpp>
 #include "sys.hpp"
+#include "Bullet.hpp"
 #include "Particle.hpp"
 #include "ParticleMan.hpp"
 #include "Entity.hpp"
 #include "Camera.hpp"
 #include "Map.hpp"
+
 
 
 using namespace sf;
@@ -24,6 +26,14 @@ public:
 	float gameTime = 0.0;
 	double tickTimer = 0.0;
 	float gravity = 144.0f;
+
+	float fireRate = 0.075f;
+	float fireRateTimer = 0;
+	float lastFireRateTimeUpdate = 0;
+
+	std::mt19937 seed; /**< The random number generator */
+	std::uniform_real_distribution<float> rand_float{-10, 10}; /**< The random float generator */
+	
 	
 	Camera camera;
 	Map map;
@@ -38,6 +48,7 @@ public:
 	bool closing = false;
 	
 	std::vector<Entity> entities;
+	std::vector<Bullet> bullets;
 
 	Entity player;
 
